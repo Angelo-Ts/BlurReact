@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BlurReact</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <header><span class="logo">B</span><div><h1>BlurReact</h1><p>Privacy che rimane.</p></div><span class="badge">EDGE</span></header>
+  <main>
+    <section class="card">
+      <p id="site" class="site">Caricamento…</p>
+      <div class="columns"><label>Effetto<select id="effect"><option value="blur">Blur</option><option value="strong">Strong Blur</option><option value="pixel">Pixel</option><option value="blackout">Oscura</option><option value="hide">Nascondi</option></select></label><label>Ambito<select id="scope"><option value="page">Questa pagina</option><option value="site">Tutto il sito</option></select></label></div>
+      <label class="slider">Intensità <output id="value">12</output><input id="intensity" type="range" min="1" max="40" value="12"></label>
+      <p class="hint" id="effect-hint">Seleziona più elementi con clic consecutivi.</p>
+      <button id="start" class="primary">＋ Avvia selezione multipla</button>
+      <button id="stop" class="secondary">Fine selezione</button>
+    </section>
+    <section class="rules"><div class="section-title"><h2>Oscuramenti salvati</h2><span id="count">0</span></div><p class="hint">Le regole restano salvate anche se l’elemento non è presente. Sono elencati anche i frame del sito aperto.</p><div id="rules"></div></section>
+    <div class="footer-actions"><button id="restore-page">Ripristina pagina</button><button id="restore-site">Ripristina sito</button></div>
+    <p id="status" role="status"></p>
+    <details><summary>Come funziona</summary><p>Ogni clic salva una regola. Dopo un refresh o un aggiornamento React, l’effetto viene riapplicato quando l’elemento è riconosciuto. Le regole «Questa pagina» comprendono percorso, query e frammento URL.</p><p>Blur e Pixel riducono la leggibilità; per contenuti sensibili usa Oscura o Nascondi. Nascondi conserva lo spazio nel layout. Controlla il risultato prima di registrare.</p><p>Le pagine interne di Edge, gli store, i PDF e i componenti Shadow DOM chiusi non sono accessibili. Dopo aver installato o aggiornato l’estensione, ricarica le schede già aperte.</p></details>
+  </main><script src="popup.js"></script>
+</body></html>
