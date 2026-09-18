@@ -1,6 +1,7 @@
 import { OWN, effects, request, pagePath, type Rule, type Settings, type Effect } from '../shared';
 import { targetFor, isOwned } from './identity';
 import { Engine } from './engine';
+import { MediaSelection } from './media-selection';
 
 const CSS_UI = `:host{all:initial!important;position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;font:14px system-ui!important;color:#edf2ff!important;color-scheme:dark!important}*{box-sizing:border-box}#panel{pointer-events:auto;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:min(760px,96vw);background:#121827;border:1px solid #52617e;border-radius:16px;padding:14px 18px;box-shadow:0 12px 48px #0008}header,.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}header{justify-content:space-between;margin-bottom:10px}strong{font-size:16px}p{margin:9px 0 0;color:#b8c3d9;font-size:12px}button,select{font:inherit;color:inherit;background:#25314b;border:1px solid #536384;border-radius:8px;padding:7px 10px;cursor:pointer}button:hover{background:#384c76}button.primary{background:#6468ed;border-color:#9295ff}label{display:flex;gap:7px;align-items:center;font-size:12px}input{accent-color:#9194ff;width:110px}#outline{position:fixed;border:2px solid #9b8aff;background:#9b8aff18;box-shadow:0 0 0 1px #171525;pointer-events:none;border-radius:3px}#tag{position:absolute;top:0;left:0;transform:translateY(-100%);font:12px system-ui;background:#6551c7;color:white;padding:3px 7px;white-space:nowrap}#status{min-height:16px}#status.error{color:#ff9f9f}button:disabled{opacity:.5;cursor:default}`;
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) {
@@ -18,6 +19,7 @@ export class Selection {
   private selected = new Set<string>();
   private settings!: Settings;
   private pending = 0;
+  private media?: MediaSelection;
   constructor(private engine: Engine) {}
   configure(settings: Settings) { if (this.host) this.settings = { ...settings }; }
   start(settings: Settings) {
@@ -50,7 +52,14 @@ export class Selection {
     this.outline = make('div'); this.outline.id = 'outline'; this.outline.hidden = true;
     this.tag = make('span'); this.tag.id = 'tag'; this.outline.append(this.tag);
     if (window.top !== window) panel.style.display = 'none';
+    panel.style.zIndex = '2'; this.outline.style.zIndex = '1';
     shadow.append(this.outline, panel); document.documentElement.append(host);
+    this.media = new MediaSelection(shadow, () => this.engine.selectionRoots, element => {
+      if (element !== this.leaf) { this.leaf = element; this.current = element; }
+    }, element => {
+      const target = element === this.leaf ? this.current : element;
+      if (target) void this.add(target);
+    });
     document.addEventListener('pointermove', this.move, true);
     document.addEventListener('pointerdown', this.block, true);
     document.addEventListener('click', this.click, true);
@@ -59,6 +68,7 @@ export class Selection {
   }
   stop() {
     this.host?.remove(); this.host = undefined; this.current = undefined; this.leaf = undefined;
+    this.media?.stop(); this.media = undefined;
     cancelAnimationFrame(this.frame);
     document.removeEventListener('pointermove', this.move, true);
     document.removeEventListener('pointerdown', this.block, true);
@@ -106,6 +116,7 @@ export class Selection {
   }
   private draw = () => {
     if (!this.host) return;
+    this.media?.position();
     if (!this.host.isConnected && document.documentElement) document.documentElement.append(this.host);
     if (this.outline && this.current?.isConnected) {
       let rect = this.current.getBoundingClientRect();

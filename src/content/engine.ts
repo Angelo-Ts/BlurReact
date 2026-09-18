@@ -18,6 +18,7 @@ export class Engine {
   private effects = new Effects(`br-${crypto.randomUUID()}`);
   private observers = new Map<Document | ShadowRoot, MutationObserver>();
   onChange = () => {};
+  get selectionRoots() { return [...this.roots].filter(root => root instanceof Document || root.host.isConnected); }
   constructor() {
     this.observe(document);
     addEventListener('popstate', () => this.navigate());

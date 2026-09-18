@@ -216,7 +216,12 @@ test('media, inline text, contents, fixed elements and scrolling retain visible 
   });
   await start('blackout');
   for (const id of ['image', 'vector', 'video', 'fixed', 'inline-secret']) {
-    await page.locator(`#${id}`).click();
+    if (id === 'video') {
+      // A user clicks the visible video. Selection deliberately covers native controls.
+      await page.locator('#video').scrollIntoViewIfNeeded();
+      const box = (await page.locator('#video').boundingBox())!;
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    } else await page.locator(`#${id}`).click();
     await expect(page.locator(`#${id}`)).toHaveAttribute('data-blurreact', /.+/);
   }
   await stop();
@@ -247,4 +252,44 @@ test('concurrent writers preserve all rules and query/hash/replaceState scope is
   await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'none');
   await page.evaluate(() => history.replaceState({}, '', '/profile'));
   await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'blur(12px)');
+});
+
+test('native video and audio controls can be selected once, remain intact, and masks survive refresh', async () => {
+  await page.evaluate(async () => {
+    const video = document.querySelector('video')!;
+    video.muted = true;
+    const canvas = document.querySelector('canvas')!;
+    video.srcObject = canvas.captureStream(10);
+    const painter = canvas.getContext('2d')!;
+    let frame = 0;
+    // captureStream emits frames on drawing; keep a real moving source alive.
+    window.setInterval(() => { painter.fillStyle = `rgb(${frame++ % 255},80,120)`; painter.fillRect(0, 0, canvas.width, canvas.height); }, 100);
+    await video.play();
+    const audio = document.createElement('audio'); audio.id = 'native-audio'; audio.controls = true;
+    document.querySelector('main')!.prepend(audio);
+  });
+  await start('blackout');
+  const selectVisibleMedia = async (selector: string) => {
+    const media = page.locator(selector);
+    await media.scrollIntoViewIfNeeded();
+    const box = (await media.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(media).toHaveAttribute('data-blurreact', /.+/);
+  };
+  await selectVisibleMedia('#video');
+  await selectVisibleMedia('#video');
+  await selectVisibleMedia('#native-audio');
+  await stop();
+  expect((await rules()).length).toBe(2);
+  await expect(page.locator('[data-media-selection]')).toHaveCount(0);
+  expect(await page.locator('#video').evaluate((video: HTMLVideoElement) => video.controls && !video.paused)).toBe(true);
+  for (const id of ['video', 'native-audio']) {
+    const shot = PNG.sync.read(await page.locator(`#${id}`).screenshot());
+    const i = (Math.floor(shot.height/2) * shot.width + Math.floor(shot.width/2)) * 4;
+    expect([...shot.data.subarray(i, i+3)]).toEqual([17, 24, 39]);
+  }
+  await page.reload();
+  await expect(page.locator('#video')).toHaveCSS('filter', /url\(/);
+  expect((await rules()).length).toBe(2);
 });

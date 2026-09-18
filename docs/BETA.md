@@ -1,11 +1,13 @@
 # Verifica beta 1.0.0-beta.1
 
-## Prima verifica, 18 settembre 2026
+## Verifica finale della beta, 18 settembre 2026
 
 - Build TypeScript/esbuild riuscita.
-- 9 test end-to-end su 10 superati con l’estensione caricata in Microsoft Edge.
+- **11 test end-to-end su 11 superati** con l’estensione caricata in Microsoft Edge **153.0.4234.32** su Windows.
 - Verificati: selezione multipla, refresh, chiusura e riapertura del browser, remount React, nodo assente e ricreato, navigazione SPA e ambiti URL, aggiornamento intensità, ripristino, Shadow DOM aperto, iframe cross-origin, stili inline `!important`, scritture concorrenti, popup e resa grafica di Pixel/Oscura.
-- Problema aperto: nel test multimediale, il video con controlli nativi non risulta coperto nella schermata catturata. Il test distingue ora la mancata selezione dal mancato rendering dell’effetto.
+- Corretto il difetto dei video con controlli nativi: una superficie temporanea di selezione intercetta il clic senza modificare i controlli. Verificati video in riproduzione, audio, selezioni ripetute senza duplicati, resa opaca tramite screenshot e persistenza dopo refresh.
+- Verificati anche immagini, SVG, testo inline, elementi fissi, scrolling e `display:contents`.
+- Comando di verifica: `npm test`. Lo ZIP viene ricostruito dai medesimi sorgenti con `npm run package`, controllando i file richiesti dal manifest e il contenuto byte per byte dopo estrazione.
 
 La PR resta in bozza per i test dell’utente. Questa verifica non dimostra compatibilità universale con ogni sito React o ogni modalità multimediale.
 

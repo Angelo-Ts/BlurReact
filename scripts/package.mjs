@@ -19,6 +19,9 @@ for (const name of [manifest.background.service_worker, manifest.action.default_
 const archive = zipSync(files, { level: 9, mtime: new Date('2026-01-01T00:00:00Z') });
 const unpacked = unzipSync(archive);
 if (Object.keys(unpacked).length !== Object.keys(files).length) throw new Error('Incomplete archive');
+for (const [name, bytes] of Object.entries(files)) {
+  if (!Buffer.from(unpacked[name]).equals(Buffer.from(bytes))) throw new Error(`Archive content mismatch: ${name}`);
+}
 const filename = `BlurReact-${manifest.version_name || manifest.version}.zip`;
 await mkdir('release', { recursive: true });
 await writeFile(`release/${filename}`, archive);

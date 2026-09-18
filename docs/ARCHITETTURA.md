@@ -16,11 +16,13 @@ Gli host Shadow DOM aperti sono risolti con una catena di identità; gli host di
 
 ## Rendering e ripristino
 
-Gli effetti sono applicati tramite un attributo dell’estensione e un foglio di stile dedicato, senza sovrascrivere gli stili inline del sito. Blur e Strong Blur usano filtri CSS; Pixel usa un filtro SVG di campionamento su griglia e dilatazione; Oscura usa un riempimento opaco del rettangolo del filtro SVG. Nascondi usa `visibility:hidden`, conservando lo spazio occupato. `display:contents` viene gestito applicando il filtro ai figli con un box visivo.
+Gli effetti sono applicati tramite un attributo dell’estensione e un foglio di stile dedicato. Solo quando uno stile del sito prevale sul foglio dell’estensione si usa un override inline: viene conservato e poi ripristinato il valore originale, includendo eventuali aggiornamenti successivi del sito. Blur e Strong Blur usano filtri CSS; Pixel usa un filtro SVG di campionamento su griglia e dilatazione; Oscura usa un riempimento opaco del rettangolo del filtro SVG. Nascondi usa `visibility:hidden` e opacità zero, conservando lo spazio occupato. `display:contents` viene gestito applicando il filtro ai figli con un box visivo.
 
 Il filtro segue il rendering del browser, inclusi scroll, trasformazioni, overflow e posizionamento fixed/sticky. Oscura non intercetta gli eventi della pagina; Nascondi rende invece il contenuto invisibile e non interagibile. La rimozione di una regola elimina il relativo marcatore e CSS, conservando le modifiche allo stile fatte nel frattempo dal sito.
 
 La toolbar è isolata in Shadow DOM. Durante la selezione, i clic destinati alla selezione vengono intercettati; dopo Fine/Esc, vengono rimossi i listener di selezione. L’overlay usa un solo requestAnimationFrame, attivo solo durante la selezione.
+
+I controlli nativi di audio/video possono assorbire anche gli eventi pointer del documento. Durante la selezione vengono quindi aggiunte superfici trasparenti sopra i media con controlli, senza modificarne gli attributi o fermare la riproduzione. Queste superfici seguono posizione e clipping, rispettano gli elementi della pagina sovrapposti e vengono eliminate alla fine della selezione. Il rilevamento dei media aggiunti dinamicamente usa query per tag ogni 250 ms, esclusivamente mentre la selezione è attiva.
 
 ## Permessi
 
