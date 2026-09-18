@@ -642,7 +642,7 @@ Separare correttamente:
 
 * service worker;
 * content script;
-* popup React;
+* popup HTML/CSS/TypeScript (React facoltativo);
 * eventuali script di pagina;
 * CSS dell’estensione.
 
@@ -704,7 +704,7 @@ Extension
 │   └── navigation-observer
 │
 ├── popup/
-│   └── React UI
+│   └── UI HTML/CSS/TypeScript (React facoltativo)
 │
 └── shared/
     ├── types

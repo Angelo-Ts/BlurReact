@@ -1,0 +1,26 @@
+{
+  "name": "blurreact",
+  "version": "1.0.0-beta.2",
+  "private": true,
+  "type": "module",
+  "description": "Persistent visual masking for Microsoft Edge and React applications",
+  "scripts": {
+    "build": "tsc --noEmit && node scripts/build.mjs",
+    "package": "npm run build && node scripts/package.mjs",
+    "test": "npm run build && playwright test",
+    "dev": "node scripts/build.mjs --watch",
+    "fixture": "node tests/server.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/chrome": "^0.1.24",
+    "@types/node": "^22.0.0",
+    "@types/pngjs": "^6.0.5",
+    "esbuild": "^0.25.0",
+    "fflate": "^0.8.3",
+    "pngjs": "^7.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.9.0"
+  }
+}

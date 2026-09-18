@@ -9,3 +9,6 @@ playwright-report/
 *.log
 .DS_Store
 Thumbs.db
+.tools/
+artifacts/
+.test-profile/
