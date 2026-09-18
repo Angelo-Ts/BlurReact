@@ -22,6 +22,7 @@ Per aggiornare, sostituisci i file nella stessa cartella, premi **Ricarica** nel
 - Usa **↑ Genitore / ↓ Figlio** o i tasti freccia per cambiare livello; premi **Fine** o **Esc** per terminare.
 - Nella toolbar, effetto e intensità aggiornano gli elementi scelti nella sessione corrente. Dal popup puoi modificare o ripristinare ogni regola, la pagina o il sito.
 - Nascondi conserva lo spazio nel layout. Oscura applica una copertura opaca mantenendo le interazioni.
+- L’interruttore **Oscuramenti attivi** sospende o riattiva contemporaneamente tutte le regole senza eliminarle. Lo stato dell’interruttore resta salvato dopo refresh e riavvio.
 
 «Questa pagina» comprende percorso, query e hash. «Tutto il sito» riguarda la stessa origine (protocollo, dominio e porta), non tutti i domini visitati. Le regole degli iframe sono riferite all’origine del frame.
 

@@ -29,6 +29,9 @@ async function handle(message: Command, sender: chrome.runtime.MessageSender): P
       break;
     }
     case 'REMOVE': store.rules = store.rules.filter(r => !message.ids.includes(r.id)); break;
+    case 'SET_ENABLED':
+      if (typeof message.enabled !== 'boolean') throw new Error('Stato globale non valido');
+      store.enabled = message.enabled; break;
     case 'UPDATE':
       if (!(message.effect in effects) || !Number.isFinite(message.intensity)) throw new Error('Effetto non valido');
       store.rules = store.rules.map(r => message.ids.includes(r.id) ? { ...r, effect: message.effect, intensity: amount(message.intensity) } : r); break;

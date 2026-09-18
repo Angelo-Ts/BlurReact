@@ -6,6 +6,7 @@ let store: Store;
 const effect = $<HTMLSelectElement>('effect');
 const intensity = $<HTMLInputElement>('intensity');
 const scope = $<HTMLSelectElement>('scope');
+const masterEnabled = $<HTMLInputElement>('master-enabled');
 function status(text: string, error = false) { $('status').textContent = text; $('status').className = error ? 'error' : ''; }
 function settings(): Settings { return { effect: effect.value as Effect, intensity: Number(intensity.value), scope: scope.value as Settings['scope'], debug: store?.settings.debug || false }; }
 function hint() {
@@ -22,6 +23,9 @@ async function saveSettings() {
 function relevant() { return store.rules.filter(r => urls.some(url => r.origin === url.origin)); }
 function render() {
   if (document.activeElement instanceof HTMLInputElement && document.activeElement.type === 'range') return;
+  masterEnabled.checked = store.enabled;
+  $('master-state').textContent = store.enabled ? 'Tutte le regole sono applicate' : 'Regole sospese, nessun dato eliminato';
+  $<HTMLButtonElement>('start').disabled = !store.enabled || !urls.some(u => ['https:', 'http:'].includes(u.protocol));
   const list = $('rules'); list.replaceChildren();
   const rules = relevant(); $('count').textContent = String(rules.length);
   if (!rules.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Nessun oscuramento salvato per questo sito.'; list.append(p); }
@@ -63,6 +67,13 @@ $('stop').onclick = async () => {
   catch { status('Nessuna pagina accessibile.', true); }
 };
 effect.onchange = saveSettings; intensity.oninput = saveSettings; intensity.onblur = () => render(); scope.onchange = saveSettings;
+masterEnabled.onchange = async () => {
+  const enabled = masterEnabled.checked;
+  try {
+    await request({ type: 'SET_ENABLED', enabled });
+    status(enabled ? 'Tutti gli oscuramenti sono attivi.' : 'Oscuramenti sospesi. Le regole sono state conservate.');
+  } catch (e) { masterEnabled.checked = !enabled; status((e as Error).message, true); }
+};
 $('restore-page').onclick = () => restore(relevant().filter(r => urls.some(u => applies(r, u))).map(r => r.id));
 $('restore-site').onclick = () => restore(relevant().map(r => r.id));
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -82,7 +93,7 @@ async function init() {
     const initial = store.settings || defaults;
     effect.value = initial.effect; intensity.value = String(initial.intensity); scope.value = initial.scope;
     hint(); render();
-    $<HTMLButtonElement>('start').disabled = !urls.some(u => ['https:', 'http:'].includes(u.protocol));
+    $<HTMLButtonElement>('start').disabled = !store.enabled || !urls.some(u => ['https:', 'http:'].includes(u.protocol));
   } catch (e) { status((e as Error).message, true); }
 }
 void init();

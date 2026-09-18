@@ -1,0 +1,20 @@
+.master-toggle {
+  align-items: center;
+  background: #101827;
+  border: 1px solid #34445e;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  margin: 0 0 15px;
+  padding: 11px 12px;
+}
+.master-toggle span { display: flex; flex: 1; flex-direction: column; gap: 2px; }
+.master-toggle strong { color: #eef2ff; font-size: 12px; }
+.master-toggle small { color: #96a7c2; font-size: 10px; }
+.master-toggle input { opacity: 0; pointer-events: none; position: absolute; }
+.master-toggle i { background: #46536a; border-radius: 999px; height: 24px; position: relative; transition: .18s; width: 42px; }
+.master-toggle i::after { background: white; border-radius: 50%; content: ""; height: 18px; left: 3px; position: absolute; top: 3px; transition: .18s; width: 18px; }
+.master-toggle input:checked + i { background: #8177ef; }
+.master-toggle input:checked + i::after { transform: translateX(18px); }
+.master-toggle input:focus-visible + i { outline: 2px solid #b4aaff; outline-offset: 2px; }

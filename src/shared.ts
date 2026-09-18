@@ -14,7 +14,7 @@ export interface Rule {
   effect: Effect; intensity: number; target: Target; createdAt: number;
 }
 export interface Settings { effect: Effect; intensity: number; scope: Scope; debug: boolean }
-export interface Store { version: 1; rules: Rule[]; settings: Settings }
+export interface Store { version: 1; enabled: boolean; rules: Rule[]; settings: Settings }
 export const defaults: Settings = { effect: 'blur', intensity: 12, scope: 'page', debug: false };
 export const effects: Record<Effect, string> = { blur: 'Blur', strong: 'Strong Blur', pixel: 'Pixel', blackout: 'Oscura', hide: 'Nascondi' };
 export type Command =
@@ -22,12 +22,13 @@ export type Command =
   | { type: 'ADD'; rule: Rule }
   | { type: 'REMOVE'; ids: string[] }
   | { type: 'UPDATE'; ids: string[]; effect: Effect; intensity: number }
+  | { type: 'SET_ENABLED'; enabled: boolean }
   | { type: 'SETTINGS'; settings: Settings }
   | { type: 'CONTROL'; tabId: number; action: 'START' | 'STOP'; settings?: Settings }
   | { type: 'FRAME_CONTROL'; action: 'START' | 'STOP'; settings?: Settings }
   | { type: 'NAVIGATION' };
 export type Reply = { ok: true; store?: Store } | { ok: false; error: string };
-export function emptyStore(): Store { return { version: 1, rules: [], settings: { ...defaults } }; }
+export function emptyStore(): Store { return { version: 1, enabled: true, rules: [], settings: { ...defaults } }; }
 export function pagePath(url: URL): string { return url.pathname + url.search + url.hash; }
 export function applies(rule: Rule, url: URL): boolean {
   return rule.origin === url.origin && (rule.scope === 'site' || rule.path === pagePath(url));
@@ -47,6 +48,7 @@ export function readStore(raw: unknown): Store {
     && typeof x.path === 'string' && typeof x.parent === 'string'
     && typeof x.structure === 'string' && typeof x.textHash === 'string';
   if (!value || value.version !== 1 || !Array.isArray(value.rules) || !value.settings
+    || (value.enabled !== undefined && typeof value.enabled !== 'boolean')
     || !(value.settings.effect in effects) || !Number.isFinite(value.settings.intensity)
     || !['page', 'site'].includes(value.settings.scope)
     || !value.rules.every(r => r && /^[a-f0-9-]{36}$/.test(r.id) && typeof r.origin === 'string'
@@ -55,5 +57,6 @@ export function readStore(raw: unknown): Store {
       && r.target.hosts.every(identity) && identity(r.target.element))) {
     throw new Error('Formato delle regole non supportato. I dati sono stati conservati.');
   }
-  return value;
+  // Migration for beta.1 stores: existing rules remain active by default.
+  return { ...value, enabled: typeof value.enabled === 'boolean' ? value.enabled : true };
 }

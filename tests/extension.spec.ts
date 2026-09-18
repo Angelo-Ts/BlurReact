@@ -107,6 +107,39 @@ test('popup operates on the active site: starts selection, adjusts rules and res
   await popup.close();
 });
 
+test('global switch suspends every rule without deletion and survives refresh and browser restart', async () => {
+  await start();
+  await page.locator('[data-testid="balance"]').click();
+  await page.locator('[data-testid="email"]').click();
+  await stop();
+  await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'blur(12px)');
+
+  const tabId = await worker.evaluate(async () => (await chrome.tabs.query({})).find(t => t.url?.startsWith('http://127.0.0.1:4173'))!.id!);
+  const popup = await context.newPage();
+  await worker.evaluate(async id => { await chrome.tabs.update(id, { active: true }); }, tabId);
+  await popup.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html`);
+  await expect(popup.locator('#master-enabled')).toBeChecked();
+  await popup.locator('.master-toggle').click();
+  await expect(popup.locator('#master-enabled')).not.toBeChecked();
+  await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'none');
+  await expect(popup.locator('.rule')).toHaveCount(2);
+  await expect(popup.locator('#start')).toBeDisabled();
+  expect((await rules()).length).toBe(2);
+  await popup.close();
+
+  await page.reload();
+  await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'none');
+  await context.close(); await launch(); page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/profile');
+  await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'none');
+  expect((await command({ type: 'GET' })).store.enabled).toBe(false);
+  expect((await rules()).length).toBe(2);
+
+  await command({ type: 'SET_ENABLED', enabled: true });
+  await expect(page.locator('[data-testid="balance"]')).toHaveCSS('filter', 'blur(12px)');
+  await expect(page.locator('[data-testid="email"]')).toHaveCSS('filter', 'blur(12px)');
+});
+
 test('multiple selection persists through refresh, React remount, missing node and browser restart', async () => {
   await start();
   await page.locator('[data-testid="balance"]').click();

@@ -95,6 +95,11 @@ export class Engine {
   }
   flush() {
     if (!this.store || !document.documentElement) return;
+    if (!this.store.enabled) {
+      this.bindings.clear(); this.status.clear();
+      this.effects.render([], this.bindings);
+      this.onChange(); return;
+    }
     const url = new URL(location.href);
     // about:blank frames inherit origin but do not have a useful page scope.
     if (url.protocol === 'about:' && document.referrer) { try { url.href = document.referrer; } catch {} }

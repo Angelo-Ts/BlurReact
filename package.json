@@ -1,6 +1,6 @@
 {
   "name": "blurreact",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "private": true,
   "type": "module",
   "description": "Persistent visual masking for Microsoft Edge and React applications",
